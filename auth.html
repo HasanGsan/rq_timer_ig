@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+
+    <link rel="stylesheet" href="assets/style/style_auth_panel.css">
+
+    <meta charset="UTF-8">
+
+    <title>RQ timer Авторизация</title>
+
+    <script type="module" src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js"></script>
+    <script type="module" src="https://www.gstatic.com/firebasejs/10.13.2/firebase-database.js"></script>
+    <script src="assets/js/app.js"></script>
+    <!--    <script type="module" src="assets/js/java.js"></script>-->
+    <script src="assets/js/scroll.js"></script>
+    <script type="module" src="assets/js/auth.js"></script>
+    <link rel="stylesheet" href="./style.css">
+    <link rel="stylesheet" href="assets/style/alert_style.css">
+
+</head>
+
+
+
+<body>
+
+   <div id="customAlert" class="custom-alert">
+        <div class="alert-box">
+            <p id="alertMessage"></p>
+            <button id="alertOkButton" class="alert-button">OK</button>
+        </div>
+    </div>
+
+    <!-- partial:index.partial.html -->
+
+    <section> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> <span></span>
+
+        <div class="signin">
+
+            <div class="content">
+
+                <h2>Авторизация</h2>
+
+                <div class="form">
+
+                    <div class="inputBox">
+                        <input type="text" id="login" required placeholder="Логин">
+                    </div>
+
+                    <div class="inputBox">
+                        <input type="password" id="password" required placeholder="Пароль">
+                    </div>
+
+                    <div class="links">
+                        <a href="#" id="forgotPassword">Забыли данные?</a>
+                    </div>
+
+                    <div class="inputBox">
+                        <input type="submit" id="submitButton" value="Войти">
+
+                    </div>
+
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section> <!-- partial -->
+
+</body>
+
+</html>

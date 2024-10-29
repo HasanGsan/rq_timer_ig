@@ -1,0 +1,1217 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script type="module" src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js"></script>
+    <script type="module" src="https://www.gstatic.com/firebasejs/10.13.2/firebase-database.js"></script>
+
+    <script type="module" src="assets/js/java.js"></script>
+    <script src="https://code.responsivevoice.org/responsivevoice.js"></script>
+
+    <script src="assets/js/app.js"></script>
+    <script src="assets/js/search_bosses.js"></script>
+    <script src="assets/js/scroll.js"></script>
+
+    <link rel="stylesheet" href="assets/style/style.css">
+    <link rel="stylesheet" href="assets/style/alert_style.css">
+    <title>Royal Quest Timer</title>
+</head>
+
+
+
+<body>
+
+    <!-- Модальное окно -->
+    <div id="customAlert" class="custom-alert">
+        <div class="alert-box">
+            <p id="alertMessage"></p>
+            <button id="alertOkButton" class="alert-button">OK</button>
+        </div>
+    </div>
+
+    <!-- Модальное окно для подтверждения отмены -->
+    <div id="cancel-dialog" class="modal">
+        <div class="modal-content">
+            <p>Вы действительно хотите отменить таймер?</p>
+            <button class="btn" id="confirm-cancel-btn">Да</button>
+            <button class="btn" id="deny-cancel-btn">Нет</button>
+        </div>
+    </div>
+
+    <!-- Модальное окно для ввода времени -->
+
+
+
+
+    <!-- Модальное окно ручного ввода -->
+    <div class="modal-overlay" id="timeModal">
+        <div class="modal-content-time" tabindex="0">
+            <h2>Введите время</h2>
+            <div class="time-input-container">
+                <div>
+                    <label class="time-label" for="hours-input">Часы</label>
+                    <input type="number" id="hours-input" class="time-input" min="0" max="23" placeholder="00" />
+                </div>
+                <div>
+                    <label class="time-label" for="minutes-input">Минуты</label>
+                    <input type="number" id="minutes-input" class="time-input" min="0" max="59" placeholder="00" />
+                </div>
+                <div>
+                    <label class="time-label" for="seconds-input">Секунды</label>
+                    <input type="number" id="seconds-input" class="time-input" min="0" max="59" placeholder="00" />
+                </div>
+            </div>
+            <div class="modal-buttons">
+                <button id="confirm-input-btn" class="custom-btn">Подтвердить</button>
+                <button id="reset-input-btn" class="custom-btn">Сброс</button> <!-- Кнопка сброса -->
+                <button id="cancel-input-btn" class="custom-btn">Отмена</button>
+            </div>
+        </div>
+    </div>
+
+
+
+
+
+
+
+
+
+    <!-- Модальное окно для ОБЩИХ НАСТРОЕК-->
+    <!--
+<div id="modal-settings" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeSettings()">&times;</span>
+        <h2>Настройки</h2>
+     
+        <button id="theme-toggle-modal" class="theme-toggle-button">Смена на тёмную тему</button>
+        
+        
+    </div>
+</div>
+-->
+
+    <div id="modal-settings" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeSettings()">&times;</span>
+            <h2>Настройки</h2>
+
+            <!-- Кнопка переключения темы внутри модального окна -->
+            <button id="theme-toggle-modal" class="theme-toggle-button">Смена на тёмную тему</button>
+
+            <label for="volumeControl">Громкость:</label>
+            <input type="range" id="volumeControl" min="0" max="1" step="0.1" value="1" onchange="updateVolume()" />
+
+            <label for="rateControl">Скорость:</label>
+            <input type="range" id="rateControl" min="0.5" max="2" step="0.1" value="1" onchange="updateRate()" />
+
+            <label for="pitchControl">Тембр:</label>
+            <input type="range" id="pitchControl" min="0" max="2" step="0.1" value="1" onchange="updatePitch()" />
+
+
+
+        </div>
+    </div>
+
+
+
+
+
+    <!-- Модальное окно для скрытия боссов -->
+    <div id="boss-settings-modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close" onclick="document.getElementById('boss-settings-modal').style.display='none'">&times;</span>
+            <h2>Настройки боссов</h2>
+            <form id="boss-settings-form">
+                <div class="boss-list" id="boss-list"></div>
+                <div class="button-container">
+                    <button type="submit">Сохранить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+    <div class="leftArrayInfo">
+        <button class="button-3d" id="logoutButton">Выйти</button>
+        <h4 id="welcomeMessage">
+        </h4>
+        <p id="animatedText">
+            <span>Сервер: </span>
+            <span>I</span>
+            <span>G</span>
+            <span>N</span>
+            <span>I</span>
+            <span>S</span>
+        </p>
+        <h4 id="auth_log_name">
+        </h4>
+    </div>
+
+
+
+
+
+    <!-- Кнопка для открытия модального окна -->
+
+    <div class="button-container-settings settingBtnBoss">
+        <button class="button-settings-icon" id="gear-btn" aria-label="Настройки" onclick="openSettings()">
+            <img src="assets/img/settings-icon_2.svg" alt="Gear" class="gear-icon">
+        </button>
+        <button id="settings-boss-btn" class="button-settings">Настройки Боссов</button>
+    </div>
+
+
+
+    <div class="container">
+        <div id="searchWrapper">
+            <input type="text" id="searchInput" placeholder="Поиск по имени босса..." onkeyup="filterBosses()">
+        </div>
+    </div>
+
+
+    <table id="bossTable">
+        <thead>
+            <tr>
+                <th>Босс / Элита</th>
+                <th>Время КД</th>
+                <th>Отсчёт до спавна</th>
+                <th>Действие</th>
+            </tr>
+        </thead>
+        <tbody>
+
+            <tr id="archon-row">
+                <td class="boss-cell">
+                    <div class="boss-info">
+                        <img class="boss-icon" src="assets/img/icon_boss/archon-icon.png" width="90" height="104">
+                        <span class="boss-name">Архон</span>
+                    </div>
+                    <div class="boss-map">
+                        <img src="assets/img/archon.jpg" width="250" height="">
+                    </div>
+                </td>
+                <td>04:05:00</td>
+                <td class="timer" id="archon-timer">00:00:00</td>
+                <td>
+                    <div class="button-container">
+                        <button class="btn" id="archon-btn" onclick="startTimer('archon', 14700)">Убит</button>
+                        <button class="btn manual-time-btn" onclick="manualTimeInput('archon')">Ручной ввод</button>
+                        <button class="btn cancel-btn" id="archon-cancel-btn" onclick="cancelKill('archon')">✖ Отмена</button>
+                    </div>
+                </td>
+            </tr>
+            <tr id="baks-row">
+                <td class="boss-cell">
+                    <div class="boss-info">
+                        <img class="boss-icon" src="assets/img/icon_boss/baks-icon.png" width="90" height="104">
+                        <span class="boss-name">Бакс</span>
+                    </div>
+                    <div class="boss-map">
+                        <img src="assets/img/baks.jpg" width="250">
+                    </div>
+                </td>
+                <td>05:05:00</td>
+                <td class="timer" id="baks-timer">00:00:00</td>
+                <td>
+                    <div class="button-container">
+                        <button class="btn" id="baks-btn" onclick="startTimer('baks', 18300)">Убит</button>
+                        <button class="btn manual-time-btn" onclick="manualTimeInput('baks')">Ручной ввод</button>
+                        <button class="btn cancel-btn" id="baks-cancel-btn" onclick="cancelKill('baks')">✖ Отмена</button>
+                    </div>
+                </td>
+            </tr>
+            <tr id="voko-row">
+                <td class="boss-cell">
+                    <div class="boss-info">
+                        <img class="boss-icon" src="assets/img/icon_boss/voko-icon.png" width="90" height="104">
+                        <span class="boss-name">Воко</span>
+                    </div>
+                    <div class="boss-map">
+                        <img src="assets/img/voko.jpg" width="250">
+                    </div>
+                </td>
+                <td>10:05:00</td>
+                <td class="timer" id="voko-timer">00:00:00</td>
+                <td>
+                    <div class="button-container">
+                        <button class="btn" id="voko-btn" onclick="startTimer('voko', 36300)">Убит</button>
+                        <button class="btn manual-time-btn" onclick="manualTimeInput('voko')">Ручной ввод</button>
+                        <button class="btn cancel-btn" id="voko-cancel-btn" onclick="cancelKill('voko')">✖ Отмена</button>
+                    </div>
+                </td>
+            </tr>
+            <tr id="gt-row">
+                <td class="boss-cell">
+                    <div class="boss-info">
+                        <img class="boss-icon" src="assets/img/icon_boss/gt-icon.png" width="90" height="104">
+                        <span class="boss-name">ГТ</span>
+                    </div>
+                    <div class="boss-map">
+                        <img src="assets/img/gt.jpg" width="250">
+                    </div>
+                </td>
+                <td>05:05:00</td>
+                <td class="timer" id="gt-timer">00:00:00</td>
+                <td>
+                    <div class="button-container">
+                        <button class="btn" id="gt-btn" onclick="startTimer('gt', 18300)">Убит</button>
+                        <button class="btn manual-time-btn" onclick="manualTimeInput('gt')">Ручной ввод</button>
+                        <button class="btn cancel-btn" id="gt-cancel-btn" onclick="cancelKill('gt')">✖ Отмена</button>
+                    </div>
+                </td>
+            </tr>
+            <tr id="dengur-row">
+                <td class="boss-cell">
+                    <div class="boss-info">
+                        <img class="boss-icon" src="assets/img/icon_boss/dengur-icon.png" width="90" height="104">
+                        <span class="boss-name">Денгур</span>
+                    </div>
+                    <div class="boss-map">
+                        <img src="assets/img/dengur.jpg" width="250">
+                    </div>
+                </td>
+                <td>05:05:00</td>
+                <td class="timer" id="dengur-timer">00:00:00</td>
+                <td>
+                    <div class="button-container">
+                        <button class="btn" id="dengur-btn" onclick="startTimer('dengur', 18300)">Убит</button>
+                        <button class="btn manual-time-btn" onclick="manualTimeInput('dengur')">Ручной ввод</button>
+                        <button class="btn cancel-btn" id="dengur-cancel-btn" onclick="cancelKill('dengur')">✖ Отмена</button>
+                    </div>
+                </td>
+            </tr>
+            <tr id="destructor-row">
+                <td class="boss-cell">
+                    <div class="boss-info">
+                        <img class="boss-icon" src="assets/img/icon_boss/destructor-icon.png" width="90" height="104">
+                        <span class="boss-name">Деструктор</span>
+                    </div>
+                    <div class="boss-map">
+                        <img src="assets/img/destructor.jpg" width="250">
+                    </div>
+                </td>
+                <td>05:05:00</td>
+                <td class="timer" id="destructor-timer">00:00:00</td>
+                <td>
+                    <div class="button-container">
+                        <button class="btn" id="destructor-btn" onclick="startTimer('destructor', 18300)">Убит</button>
+                        <button class="btn manual-time-btn" onclick="manualTimeInput('destructor')">Ручной ввод</button>
+                        <button class="btn cancel-btn" id="destructor-cancel-btn" onclick="cancelKill('destructor')">✖ Отмена</button>
+                    </div>
+                </td>
+            </tr>
+            <tr id="ancient-ent-row">
+                <td class="boss-cell">
+                    <div class="boss-info">
+                        <img class="boss-icon" src="assets/img/icon_boss/ancient-ent-icon.png" width="90" height="104">
+                        <span class="boss-name">Древний Энт</span>
+                    </div>
+                    <div class="boss-map">
+                        <img src="assets/img/ancient-ent.jpg" width="250">
+                    </div>
+                </td>
+                <td>01:28:00</td>
+                <td class="timer" id="ancient-ent-timer">00:00:00</td>
+                <td>
+                    <div class="button-container">
+                        <button class="btn" id="ancient-ent-btn" onclick="startTimer('ancient-ent', 5280)">Убит</button>
+                        <button class="btn manual-time-btn" onclick="manualTimeInput('ancient-ent')">Ручной ввод</button>
+                        <button class="btn cancel-btn" id="ancient-ent-cancel-btn" onclick="cancelKill('ancient-ent')">✖ Отмена</button>
+                    </div>
+                </td>
+            </tr>
+            <tr id="zveromor-row">
+                <td class="boss-cell">
+                    <div class="boss-info">
+                        <img class="boss-icon" src="assets/img/icon_boss/zveromor-icon.png" width="90" height="104">
+                        <span class="boss-name">Зверомор</span>
+                    </div>
+                    <div class="boss-map">
+                        <img src="assets/img/zveromor.jpg" width="250">
+                    </div>
+                </td>
+                <td>04:05:00</td>
+                <td class="timer" id="zveromor-timer">00:00:00</td>
+                <td>
+                    <div class="button-container">
+                        <button class="btn" id="zveromor-btn" onclick="startTimer('zveromor', 14700)">Убит</button>
+                        <button class="btn manual-time-btn" onclick="manualTimeInput('zveromor')">Ручной ввод</button>
+                        <button class="btn cancel-btn" id="zveromor-cancel-btn" onclick="cancelKill('zveromor')">✖ Отмена</button>
+                    </div>
+                </td>
+            </tr>
+
+            <tr id="koroleva-row">
+                <td class="boss-cell">
+                    <div class="boss-info">
+                        <img class="boss-icon" src="assets/img/icon_boss/korolevaK-icon.png" width="90" height="104">
+                        <span class="boss-name">КоролеваК</span>
+                    </div>
+                    <div class="boss-map">
+                        <img src="assets/img/koroleva.jpg" width="250">
+                    </div>
+                </td>
+                <td>02:05:00</td>
+                <td class="timer" id="koroleva-timer">00:00:00</td>
+                <td>
+                    <div class="button-container">
+                        <button class="btn" id="koroleva-btn" onclick="startTimer('koroleva', 7500)">Убит</button>
+                        <button class="btn manual-time-btn" onclick="manualTimeInput('koroleva')">Ручной ввод</button>
+                        <button class="btn cancel-btn" id="koroleva-cancel-btn" onclick="cancelKill('koroleva')">✖ Отмена</button>
+                    </div>
+                </td>
+            </tr>
+
+            <tr id="pruzhinka-row">
+                <td class="boss-cell">
+                    <div class="boss-info">
+                        <img class="boss-icon" src="assets/img/icon_boss/pruzhinka-icon.png" width="90" height="104">
+                        <span class="boss-name">Пружинка</span>
+                    </div>
+                    <div class="boss-map">
+                        <img src="assets/img/pruzhinka.jpg" width="250">
+                    </div>
+                </td>
+                <td>08:05:00</td>
+                <td class="timer" id="pruzhinka-timer">00:00:00</td>
+                <td>
+                    <div class="button-container">
+                        <button class="btn" id="pruzhinka-btn" onclick="startTimer('pruzhinka', 29100)">Убит</button>
+                        <button class="btn manual-time-btn" onclick="manualTimeInput('pruzhinka')">Ручной ввод</button>
+                        <button class="btn cancel-btn" id="pruzhinka-cancel-btn" onclick="cancelKill('pruzhinka')">✖ Отмена</button>
+                    </div>
+                </td>
+            </tr>
+
+            <tr id="shaman-row">
+                <td class="boss-cell">
+                    <div class="boss-info">
+                        <img class="boss-icon" src="assets/img/icon_boss/shaman-icon.png" width="90" height="104">
+                        <span class="boss-name">Шаман</span>
+                    </div>
+                    <div class="boss-map">
+                        <img src="assets/img/shaman.jpg" width="250">
+                    </div>
+                </td>
+                <td>03:25:00</td>
+                <td class="timer" id="shaman-timer">00:00:00</td>
+                <td>
+                    <div class="button-container">
+                        <button class="btn" id="shaman-btn" onclick="startTimer('shaman', 12300)">Убит</button>
+                        <button class="btn manual-time-btn" onclick="manualTimeInput('shaman')">Ручной ввод</button>
+                        <button class="btn cancel-btn" id="shaman-cancel-btn" onclick="cancelKill('shaman')">✖ Отмена</button>
+                    </div>
+                </td>
+            </tr>
+            <tr id="hugo-row">
+                <td class="boss-cell">
+                    <div class="boss-info">
+                        <img class="boss-icon" src="assets/img/icon_boss/hugo-icon.png" width="125" height="104">
+                        <span class="boss-name">Хьюго</span>
+                    </div>
+                    <div class="boss-map">
+                        <img src="assets/img/hugo.jpg" width="250">
+                    </div>
+                </td>
+                <td>05:05:00</td>
+                <td class="timer" id="hugo-timer">00:00:00</td>
+                <td>
+                    <div class="button-container">
+                        <button class="btn" id="hugo-btn" onclick="startTimer('hugo', 18300)">Убит</button>
+                        <button class="btn manual-time-btn" onclick="manualTimeInput('hugo')">Ручной ввод</button>
+                        <button class="btn cancel-btn" id="hugo-cancel-btn" onclick="cancelKill('hugo')">✖ Отмена</button>
+                    </div>
+                </td>
+            </tr>
+            <tr id="edward-row">
+                <td class="boss-cell">
+                    <div class="boss-info">
+                        <img class="boss-icon" src="assets/img/icon_boss/edward-icon.png" width="90" height="104">
+                        <span class="boss-name">Эдвард</span>
+                    </div>
+                    <div class="boss-map">
+                        <img src="assets/img/edward.jpg" width="250">
+                    </div>
+                </td>
+                <td>04:05:00</td>
+                <td class="timer" id="edward-timer">00:00:00</td>
+                <td>
+                    <div class="button-container">
+                        <button class="btn" id="edward-btn" onclick="startTimer('edward', 14700)">Убит</button>
+                        <button class="btn manual-time-btn" onclick="manualTimeInput('edward')">Ручной ввод</button>
+                        <button class="btn cancel-btn" id="edward-cancel-btn" onclick="cancelKill('edward')">✖ Отмена</button>
+                    </div>
+                </td>
+            </tr>
+
+
+            <!-- Элитки -->
+
+            <tr id="zt-row">
+                <td class="boss-cell">
+                    <div class="boss-info">
+                        <img class="boss-icon" src="assets/img/icon_elit/zt.png" width="90" height="104">
+                        <span class="boss-name">ЗТ</span>
+                    </div>
+                    <div class="boss-map">
+                        <img src="" width="250">
+                    </div>
+                </td>
+                <td>02:00:00</td>
+                <td class="timer" id="zt-timer">00:00:00</td>
+                <td>
+                    <div class="button-container">
+                        <button class="btn" id="zt-btn" onclick="startTimer('zt', 7200)">Убит</button>
+                        <button class="btn manual-time-btn" onclick="manualTimeInput('zt')">Ручной ввод</button>
+                        <button class="btn cancel-btn" id="zt-cancel-btn" onclick="cancelKill('zt')">✖ Отмена</button>
+                    </div>
+                </td>
+            </tr>
+
+            <tr id="ypir-kont-row">
+                <td class="boss-cell">
+                    <div class="boss-info">
+                        <img class="boss-icon" src="assets/img/icon_elit/ypir.png" width="90" height="104">
+                        <span class="boss-name">Упырь(Конт)</span>
+                    </div>
+                    <div class="boss-map">
+                        <img src="" width="250">
+                    </div>
+                </td>
+                <td>01:10:00</td>
+                <td class="timer" id="ypir-kont-timer">00:00:00</td>
+                <td>
+                    <div class="button-container">
+                        <button class="btn" id="ypir-kont-btn" onclick="startTimer('ypir-kont', 4200)">Убит</button>
+                        <button class="btn manual-time-btn" onclick="manualTimeInput('ypir-kont')">Ручной ввод</button>
+                        <button class="btn cancel-btn" id="ypir-kont-cancel-btn" onclick="cancelKill('ypir-kont')">✖ Отмена</button>
+                    </div>
+                </td>
+            </tr>
+
+            <tr id="ypir-kat-row">
+                <td class="boss-cell">
+                    <div class="boss-info">
+                        <img class="boss-icon" src="assets/img/icon_elit/ypir.png" width="90" height="104">
+                        <span class="boss-name">Упырь(Кат)</span>
+                    </div>
+                    <div class="boss-map">
+                        <img src="" width="250">
+                    </div>
+                </td>
+                <td>02:00:00</td>
+                <td class="timer" id="ypir-kat-timer">00:00:00</td>
+                <td>
+                    <div class="button-container">
+                        <button class="btn" id="ypir-kat-btn" onclick="startTimer('ypir-kat', 7200)">Убит</button>
+                        <button class="btn manual-time-btn" onclick="manualTimeInput('ypir-kat')">Ручной ввод</button>
+                        <button class="btn cancel-btn" id="ypir-kat-cancel-btn" onclick="cancelKill('ypir-kat')">✖ Отмена</button>
+                    </div>
+                </td>
+            </tr>
+
+            <tr id="ypir-tanc-row">
+                <td class="boss-cell">
+                    <div class="boss-info">
+                        <img class="boss-icon" src="assets/img/icon_elit/ypir.png" width="90" height="104">
+                        <span class="boss-name">Упырь(Танц)</span>
+                    </div>
+                    <div class="boss-map">
+                        <img src="" width="250">
+                    </div>
+                </td>
+                <td>02:00:00</td>
+                <td class="timer" id="ypir-tanc-timer">00:00:00</td>
+                <td>
+                    <div class="button-container">
+                        <button class="btn" id="ypir-tanc-btn" onclick="startTimer('ypir-tanc', 7200)">Убит</button>
+                        <button class="btn manual-time-btn" onclick="manualTimeInput('ypir-tanc')">Ручной ввод</button>
+                        <button class="btn cancel-btn" id="ypir-tanc-cancel-btn" onclick="cancelKill('ypir-tanc')">✖ Отмена</button>
+                    </div>
+                </td>
+            </tr>
+
+            <tr id="pojir-moz-row">
+                <td class="boss-cell">
+                    <div class="boss-info">
+                        <img class="boss-icon" src="assets/img/icon_elit/poj-moz.png" width="90" height="104">
+                        <span class="boss-name">П.Моземия</span>
+                    </div>
+                    <div class="boss-map">
+                        <img src="" width="250">
+                    </div>
+                </td>
+                <td>02:45:00</td>
+                <td class="timer" id="pojir-moz-timer">00:00:00</td>
+                <td>
+                    <div class="button-container">
+                        <button class="btn" id="pojir-moz-btn" onclick="startTimer('pojir-moz', 9900)">Убит</button>
+                        <button class="btn manual-time-btn" onclick="manualTimeInput('pojir-moz')">Ручной ввод</button>
+                        <button class="btn cancel-btn" id="pojir-moz-cancel-btn" onclick="cancelKill('pojir-moz')">✖ Отмена</button>
+                    </div>
+                </td>
+            </tr>
+
+            <tr id="pojir-el-row">
+                <td class="boss-cell">
+                    <div class="boss-info">
+                        <img class="boss-icon" src="assets/img/icon_elit/poj-el.png" width="90" height="104">
+                        <span class="boss-name">П.Элениума</span>
+                    </div>
+                    <div class="boss-map">
+                        <img src="" width="250">
+                    </div>
+                </td>
+                <td>02:45:00</td>
+                <td class="timer" id="pojir-el-timer">00:00:00</td>
+                <td>
+                    <div class="button-container">
+                        <button class="btn" id="pojir-el-btn" onclick="startTimer('pojir-el', 9900)">Убит</button>
+                        <button class="btn manual-time-btn" onclick="manualTimeInput('pojir-el')">Ручной ввод</button>
+                        <button class="btn cancel-btn" id="pojir-el-cancel-btn" onclick="cancelKill('pojir-el')">✖ Отмена</button>
+                    </div>
+                </td>
+            </tr>
+
+            <tr id="sovetnik-row">
+                <td class="boss-cell">
+                    <div class="boss-info">
+                        <img class="boss-icon" src="assets/img/icon_elit/sovetnik.png" width="90" height="104">
+                        <span class="boss-name">Советник</span>
+                    </div>
+                    <div class="boss-map">
+                        <img src="" width="250">
+                    </div>
+                </td>
+                <td>02:00:00</td>
+                <td class="timer" id="sovetnik-timer">00:00:00</td>
+                <td>
+                    <div class="button-container">
+                        <button class="btn" id="sovetnik-btn" onclick="startTimer('sovetnik', 7200)">Убит</button>
+                        <button class="btn manual-time-btn" onclick="manualTimeInput('sovetnik')">Ручной ввод</button>
+                        <button class="btn cancel-btn" id="sovetnik-cancel-btn" onclick="cancelKill('sovetnik')">✖ Отмена</button>
+                    </div>
+                </td>
+            </tr>
+
+            <tr id="plamyarik-row">
+                <td class="boss-cell">
+                    <div class="boss-info">
+                        <img class="boss-icon" src="assets/img/icon_elit/plamyrik.png" width="90" height="104">
+                        <span class="boss-name">Пламярык</span>
+                    </div>
+                    <div class="boss-map">
+                        <img src="" width="250">
+                    </div>
+                </td>
+                <td>04:05:00</td>
+                <td class="timer" id="plamyarik-timer">00:00:00</td>
+                <td>
+                    <div class="button-container">
+                        <button class="btn" id="plamyarik-btn" onclick="startTimer('plamyarik', 14700)">Убит</button>
+                        <button class="btn manual-time-btn" onclick="manualTimeInput('plamyarik')">Ручной ввод</button>
+                        <button class="btn cancel-btn" id="plamyarik-cancel-btn" onclick="cancelKill('plamyarik')">✖ Отмена</button>
+                    </div>
+                </td>
+            </tr>
+
+            <tr id="kor-termit-row">
+                <td class="boss-cell">
+                    <div class="boss-info">
+                        <img class="boss-icon" src="assets/img/icon_elit/kor-temit.png" width="90" height="104">
+                        <span class="boss-name">К.Термит</span>
+                    </div>
+                    <div class="boss-map">
+                        <img src="" width="250">
+                    </div>
+                </td>
+                <td>02:00:00</td>
+                <td class="timer" id="kor-termit-timer">00:00:00</td>
+                <td>
+                    <div class="button-container">
+                        <button class="btn" id="kor-termit-btn" onclick="startTimer('kor-termit', 7200)">Убит</button>
+                        <button class="btn manual-time-btn" onclick="manualTimeInput('kor-termit')">Ручной ввод</button>
+                        <button class="btn cancel-btn" id="kor-termit-cancel-btn" onclick="cancelKill('kor-termit')">✖ Отмена</button>
+                    </div>
+                </td>
+            </tr>
+
+            <tr id="faraon-row">
+                <td class="boss-cell">
+                    <div class="boss-info">
+                        <img class="boss-icon" src="assets/img/icon_elit/faraon.png" width="90" height="104">
+                        <span class="boss-name">Фараон</span>
+                    </div>
+                    <div class="boss-map">
+                        <img src="" width="250">
+                    </div>
+                </td>
+                <td>02:00:00</td>
+                <td class="timer" id="faraon-timer">00:00:00</td>
+                <td>
+                    <div class="button-container">
+                        <button class="btn" id="faraon-btn" onclick="startTimer('faraon', 7200)">Убит</button>
+                        <button class="btn manual-time-btn" onclick="manualTimeInput('faraon')">Ручной ввод</button>
+                        <button class="btn cancel-btn" id="faraon-cancel-btn" onclick="cancelKill('faraon')">✖ Отмена</button>
+                    </div>
+                </td>
+            </tr>
+
+            <tr id="hozyain1-row">
+                <td class="boss-cell">
+                    <div class="boss-info">
+                        <img class="boss-icon" src="assets/img/icon_elit/hozain.png" width="90" height="104">
+                        <span class="boss-name">Хозяин(1эт)</span>
+                    </div>
+                    <div class="boss-map">
+                        <img src="" width="250">
+                    </div>
+                </td>
+                <td>02:00:00</td>
+                <td class="timer" id="hozyain1-timer">00:00:00</td>
+                <td>
+                    <div class="button-container">
+                        <button class="btn" id="hozyain1-btn" onclick="startTimer('hozyain1', 7200)">Убит</button>
+                        <button class="btn manual-time-btn" onclick="manualTimeInput('hozyain1')">Ручной ввод</button>
+                        <button class="btn cancel-btn" id="hozyain1-cancel-btn" onclick="cancelKill('hozyain1')">✖ Отмена</button>
+                    </div>
+                </td>
+            </tr>
+
+            <tr id="hozyain2-row">
+                <td class="boss-cell">
+                    <div class="boss-info">
+                        <img class="boss-icon" src="assets/img/icon_elit/hozain.png" width="90" height="104">
+                        <span class="boss-name">Хозяин(2эт)</span>
+                    </div>
+                    <div class="boss-map">
+                        <img src="" width="250">
+                    </div>
+                </td>
+                <td>02:00:00</td>
+                <td class="timer" id="hozyain2-timer">00:00:00</td>
+                <td>
+                    <div class="button-container">
+                        <button class="btn" id="hozyain2-btn" onclick="startTimer('hozyain2', 7200)">Убит</button>
+                        <button class="btn manual-time-btn" onclick="manualTimeInput('hozyain2')">Ручной ввод</button>
+                        <button class="btn cancel-btn" id="hozyain2-cancel-btn" onclick="cancelKill('hozyain2')">✖ Отмена</button>
+                    </div>
+                </td>
+            </tr>
+
+            <tr id="orakyl-row">
+                <td class="boss-cell">
+                    <div class="boss-info">
+                        <img class="boss-icon" src="assets/img/icon_elit/orakyl.png" width="90" height="104">
+                        <span class="boss-name">Оракул</span>
+                    </div>
+                    <div class="boss-map">
+                        <img src="" width="250">
+                    </div>
+                </td>
+                <td>01:00:00</td>
+                <td class="timer" id="orakyl-timer">00:00:00</td>
+                <td>
+                    <div class="button-container">
+                        <button class="btn" id="orakyl-btn" onclick="startTimer('orakyl', 3600)">Убит</button>
+                        <button class="btn manual-time-btn" onclick="manualTimeInput('orakyl')">Ручной ввод</button>
+                        <button class="btn cancel-btn" id="orakyl-cancel-btn" onclick="cancelKill('orakyl')">✖ Отмена</button>
+                    </div>
+                </td>
+            </tr>
+
+            <tr id="zs1-row">
+                <td class="boss-cell">
+                    <div class="boss-info">
+                        <img class="boss-icon" src="assets/img/icon_elit/zs.png" width="90" height="104">
+                        <span class="boss-name">Скарабей(1эт)</span>
+                    </div>
+                    <div class="boss-map">
+                        <img src="" width="250">
+                    </div>
+                </td>
+                <td>00:30:00</td>
+                <td class="timer" id="zs1-timer">00:00:00</td>
+                <td>
+                    <div class="button-container">
+                        <button class="btn" id="zs1-btn" onclick="startTimer('zs1', 1800)">Убит</button>
+                        <button class="btn manual-time-btn" onclick="manualTimeInput('zs1')">Ручной ввод</button>
+                        <button class="btn cancel-btn" id="zs1-cancel-btn" onclick="cancelKill('zs1')">✖ Отмена</button>
+                    </div>
+                </td>
+            </tr>
+
+            <tr id="zs2-row">
+                <td class="boss-cell">
+                    <div class="boss-info">
+                        <img class="boss-icon" src="assets/img/icon_elit/zs.png" width="90" height="104">
+                        <span class="boss-name">Скарабей(2эт)</span>
+                    </div>
+                    <div class="boss-map">
+                        <img src="" width="250">
+                    </div>
+                </td>
+                <td>00:30:00</td>
+                <td class="timer" id="zs2-timer">00:00:00</td>
+                <td>
+                    <div class="button-container">
+                        <button class="btn" id="zs2-btn" onclick="startTimer('zs2', 1800)">Убит</button>
+                        <button class="btn manual-time-btn" onclick="manualTimeInput('zs2')">Ручной ввод</button>
+                        <button class="btn cancel-btn" id="zs2-cancel-btn" onclick="cancelKill('zs2')">✖ Отмена</button>
+                    </div>
+                </td>
+            </tr>
+
+            <tr id="jyjelica-row">
+                <td class="boss-cell">
+                    <div class="boss-info">
+                        <img class="boss-icon" src="assets/img/icon_elit/jyjelica.png" width="90" height="104">
+                        <span class="boss-name">Жужелица</span>
+                    </div>
+                    <div class="boss-map">
+                        <img src="" width="250">
+                    </div>
+                </td>
+                <td>00:30:00</td>
+                <td class="timer" id="jyjelica-timer">00:00:00</td>
+                <td>
+                    <div class="button-container">
+                        <button class="btn" id="jyjelica-btn" onclick="startTimer('jyjelica', 1800)">Убит</button>
+                        <button class="btn manual-time-btn" onclick="manualTimeInput('jyjelica')">Ручной ввод</button>
+                        <button class="btn cancel-btn" id="jyjelica-cancel-btn" onclick="cancelKill('jyjelica')">✖ Отмена</button>
+                    </div>
+                </td>
+            </tr>
+
+            <tr id="samec-vor-row">
+                <td class="boss-cell">
+                    <div class="boss-info">
+                        <img class="boss-icon" src="assets/img/icon_elit/samec.png" width="90" height="104">
+                        <span class="boss-name">А.Самец(Вор)</span>
+                    </div>
+                    <div class="boss-map">
+                        <img src="" width="250">
+                    </div>
+                </td>
+                <td>02:00:00</td>
+                <td class="timer" id="samec-vor-timer">00:00:00</td>
+                <td>
+                    <div class="button-container">
+                        <button class="btn" id="samec-vor-btn" onclick="startTimer('samec-vor', 7200)">Убит</button>
+                        <button class="btn manual-time-btn" onclick="manualTimeInput('samec-vor')">Ручной ввод</button>
+                        <button class="btn cancel-btn" id="samec-vor-cancel-btn" onclick="cancelKill('samec-vor')">✖ Отмена</button>
+                    </div>
+                </td>
+            </tr>
+
+            <tr id="samec-yma-row">
+                <td class="boss-cell">
+                    <div class="boss-info">
+                        <img class="boss-icon" src="assets/img/icon_elit/samec.png" width="90" height="104">
+                        <span class="boss-name">А.Самец(Ямы)</span>
+                    </div>
+                    <div class="boss-map">
+                        <img src="" width="250">
+                    </div>
+                </td>
+                <td>02:00:00</td>
+                <td class="timer" id="samec-yma-timer">00:00:00</td>
+                <td>
+                    <div class="button-container">
+                        <button class="btn" id="samec-yma-btn" onclick="startTimer('samec-yma', 7200)">Убит</button>
+                        <button class="btn manual-time-btn" onclick="manualTimeInput('samec-yma')">Ручной ввод</button>
+                        <button class="btn cancel-btn" id="samec-yma-cancel-btn" onclick="cancelKill('samec-yma')">✖ Отмена</button>
+                    </div>
+                </td>
+            </tr>
+
+            <tr id="samec-les-row">
+                <td class="boss-cell">
+                    <div class="boss-info">
+                        <img class="boss-icon" src="assets/img/icon_elit/samec.png" width="90" height="104">
+                        <span class="boss-name">А.Самец(Лес)</span>
+                    </div>
+                    <div class="boss-map">
+                        <img src="" width="250">
+                    </div>
+                </td>
+                <td>02:00:00</td>
+                <td class="timer" id="samec-les-timer">00:00:00</td>
+                <td>
+                    <div class="button-container">
+                        <button class="btn" id="samec-les-btn" onclick="startTimer('samec-les', 7200)">Убит</button>
+                        <button class="btn manual-time-btn" onclick="manualTimeInput('samec-les')">Ручной ввод</button>
+                        <button class="btn cancel-btn" id="samec-les-cancel-btn" onclick="cancelKill('samec-les')">✖ Отмена</button>
+                    </div>
+                </td>
+            </tr>
+
+            <tr id="samca-row">
+                <td class="boss-cell">
+                    <div class="boss-info">
+                        <img class="boss-icon" src="assets/img/icon_elit/samca.png" width="90" height="104">
+                        <span class="boss-name">Ж.Самка</span>
+                    </div>
+                    <div class="boss-map">
+                        <img src="" width="250">
+                    </div>
+                </td>
+                <td>02:00:00</td>
+                <td class="timer" id="samca-timer">00:00:00</td>
+                <td>
+                    <div class="button-container">
+                        <button class="btn" id="samca-btn" onclick="startTimer('samca', 7200)">Убит</button>
+                        <button class="btn manual-time-btn" onclick="manualTimeInput('samca')">Ручной ввод</button>
+                        <button class="btn cancel-btn" id="samca-cancel-btn" onclick="cancelKill('samca')">✖ Отмена</button>
+                    </div>
+                </td>
+            </tr>
+
+            <tr id="ireks-row">
+                <td class="boss-cell">
+                    <div class="boss-info">
+                        <img class="boss-icon" src="assets/img/icon_elit/mega-ireks.png" width="90" height="104">
+                        <span class="boss-name">М.Ирекс</span>
+                    </div>
+                    <div class="boss-map">
+                        <img src="" width="250">
+                    </div>
+                </td>
+                <td>02:00:00</td>
+                <td class="timer" id="ireks-timer">00:00:00</td>
+                <td>
+                    <div class="button-container">
+                        <button class="btn" id="ireks-btn" onclick="startTimer('ireks', 7200)">Убит</button>
+                        <button class="btn manual-time-btn" onclick="manualTimeInput('ireks')">Ручной ввод</button>
+                        <button class="btn cancel-btn" id="ireks-cancel-btn" onclick="cancelKill('ireks')">✖ Отмена</button>
+                    </div>
+                </td>
+            </tr>
+
+            <tr id="gbg-row">
+                <td class="boss-cell">
+                    <div class="boss-info">
+                        <img class="boss-icon" src="assets/img/icon_elit/gbg.png" width="90" height="104">
+                        <span class="boss-name">ГБГ</span>
+                    </div>
+                    <div class="boss-map">
+                        <img src="" width="250">
+                    </div>
+                </td>
+                <td>00:10:00</td>
+                <td class="timer" id="gbg-timer">00:00:00</td>
+                <td>
+                    <div class="button-container">
+                        <button class="btn" id="gbg-btn" onclick="startTimer('gbg', 600)">Убит</button>
+                        <button class="btn manual-time-btn" onclick="manualTimeInput('gbg')">Ручной ввод</button>
+                        <button class="btn cancel-btn" id="gbg-cancel-btn" onclick="cancelKill('gbg')">✖ Отмена</button>
+                    </div>
+                </td>
+            </tr>
+
+            <tr id="lakysha-row">
+                <td class="boss-cell">
+                    <div class="boss-info">
+                        <img class="boss-icon" src="assets/img/icon_elit/lakysha.png" width="90" height="104">
+                        <span class="boss-name">Лякуша</span>
+                    </div>
+                    <div class="boss-map">
+                        <img src="" width="250">
+                    </div>
+                </td>
+                <td>00:20:00</td>
+                <td class="timer" id="lakysha-timer">00:00:00</td>
+                <td>
+                    <div class="button-container">
+                        <button class="btn" id="lakysha-btn" onclick="startTimer('lakysha', 1200)">Убит</button>
+                        <button class="btn manual-time-btn" onclick="manualTimeInput('lakysha')">Ручной ввод</button>
+                        <button class="btn cancel-btn" id="lakysha-cancel-btn" onclick="cancelKill('lakysha')">✖ Отмена</button>
+                    </div>
+                </td>
+            </tr>
+
+            <tr id="kp-row">
+                <td class="boss-cell">
+                    <div class="boss-info">
+                        <img class="boss-icon" src="assets/img/icon_elit/kp.png" width="90" height="104">
+                        <span class="boss-name">КП</span>
+                    </div>
+                    <div class="boss-map">
+                        <img src="" width="250">
+                    </div>
+                </td>
+                <td>02:00:00</td>
+                <td class="timer" id="kp-timer">00:00:00</td>
+                <td>
+                    <div class="button-container">
+                        <button class="btn" id="kp-btn" onclick="startTimer('kp', 7200)">Убит</button>
+                        <button class="btn manual-time-btn" onclick="manualTimeInput('kp')">Ручной ввод</button>
+                        <button class="btn cancel-btn" id="kp-cancel-btn" onclick="cancelKill('kp')">✖ Отмена</button>
+                    </div>
+                </td>
+            </tr>
+
+            <tr id="kb1-row">
+                <td class="boss-cell">
+                    <div class="boss-info">
+                        <img class="boss-icon" src="assets/img/icon_elit/kaban.png" width="90" height="104">
+                        <span class="boss-name">Кабан(ТЗ)</span>
+                    </div>
+                    <div class="boss-map">
+                        <img src="" width="250">
+                    </div>
+                </td>
+                <td>02:00:00</td>
+                <td class="timer" id="kb1-timer">00:00:00</td>
+                <td>
+                    <div class="button-container">
+                        <button class="btn" id="kb1-btn" onclick="startTimer('kb1', 7200)">Убит</button>
+                        <button class="btn manual-time-btn" onclick="manualTimeInput('kb1')">Ручной ввод</button>
+                        <button class="btn cancel-btn" id="kb1-cancel-btn" onclick="cancelKill('kb1')">✖ Отмена</button>
+                    </div>
+                </td>
+            </tr>
+
+            <tr id="kb2-row">
+                <td class="boss-cell">
+                    <div class="boss-info">
+                        <img class="boss-icon" src="assets/img/icon_elit/kaban.png" width="90" height="104">
+                        <span class="boss-name">Кабан(ПД)</span>
+                    </div>
+                    <div class="boss-map">
+                        <img src="" width="250">
+                    </div>
+                </td>
+                <td>02:00:00</td>
+                <td class="timer" id="kb2-timer">00:00:00</td>
+                <td>
+                    <div class="button-container">
+                        <button class="btn" id="kb2-btn" onclick="startTimer('kb2', 7200)">Убит</button>
+                        <button class="btn manual-time-btn" onclick="manualTimeInput('kb2')">Ручной ввод</button>
+                        <button class="btn cancel-btn" id="kb2-cancel-btn" onclick="cancelKill('kb2')">✖ Отмена</button>
+                    </div>
+                </td>
+            </tr>
+
+            <tr id="kor-ternia-row">
+                <td class="boss-cell">
+                    <div class="boss-info">
+                        <img class="boss-icon" src="assets/img/icon_elit/kor-ternia.png" width="90" height="104">
+                        <span class="boss-name">К.Терния</span>
+                    </div>
+                    <div class="boss-map">
+                        <img src="" width="250">
+                    </div>
+                </td>
+                <td>01:57:00</td>
+                <td class="timer" id="kor-ternia-timer">00:00:00</td>
+                <td>
+                    <div class="button-container">
+                        <button class="btn" id="kor-ternia-btn" onclick="startTimer('kor-ternia', 7020)">Убит</button>
+                        <button class="btn manual-time-btn" onclick="manualTimeInput('kor-ternia')">Ручной ввод</button>
+                        <button class="btn cancel-btn" id="kor-ternia-cancel-btn" onclick="cancelKill('kor-ternia')">✖ Отмена</button>
+                    </div>
+                </td>
+            </tr>
+
+            <tr id="volk-row">
+                <td class="boss-cell">
+                    <div class="boss-info">
+                        <img class="boss-icon" src="assets/img/icon_elit/volk.png" width="90" height="104">
+                        <span class="boss-name">П.Волк</span>
+                    </div>
+                    <div class="boss-map">
+                        <img src="" width="250">
+                    </div>
+                </td>
+                <td>01:48:00</td>
+                <td class="timer" id="volk-timer">00:00:00</td>
+                <td>
+                    <div class="button-container">
+                        <button class="btn" id="volk-btn" onclick="startTimer('volk', 6480)">Убит</button>
+                        <button class="btn manual-time-btn" onclick="manualTimeInput('volk')">Ручной ввод</button>
+                        <button class="btn cancel-btn" id="volk-cancel-btn" onclick="cancelKill('volk')">✖ Отмена</button>
+                    </div>
+                </td>
+            </tr>
+
+            <tr id="tr-kris-row">
+                <td class="boss-cell">
+                    <div class="boss-info">
+                        <img class="boss-icon" src="assets/img/icon_elit/tr-kris.png" width="90" height="104">
+                        <span class="boss-name">Т.Крыс</span>
+                    </div>
+                    <div class="boss-map">
+                        <img src="" width="250">
+                    </div>
+                </td>
+                <td>02:00:00</td>
+                <td class="timer" id="tr-kris-timer">00:00:00</td>
+                <td>
+                    <div class="button-container">
+                        <button class="btn" id="tr-kris-btn" onclick="startTimer('tr-kris', 7200)">Убит</button>
+                        <button class="btn manual-time-btn" onclick="manualTimeInput('tr-kris')">Ручной ввод</button>
+                        <button class="btn cancel-btn" id="tr-kris-cancel-btn" onclick="cancelKill('tr-kris')">✖ Отмена</button>
+                    </div>
+                </td>
+            </tr>
+
+            <tr id="vdova-row">
+                <td class="boss-cell">
+                    <div class="boss-info">
+                        <img class="boss-icon" src="assets/img/icon_elit/vdova.png" width="90" height="104">
+                        <span class="boss-name">Вдова</span>
+                    </div>
+                    <div class="boss-map">
+                        <img src="" width="250">
+                    </div>
+                </td>
+                <td>02:00:00</td>
+                <td class="timer" id="vdova-timer">00:00:00</td>
+                <td>
+                    <div class="button-container">
+                        <button class="btn" id="vdova-btn" onclick="startTimer('vdova', 7200)">Убит</button>
+                        <button class="btn manual-time-btn" onclick="manualTimeInput('vdova')">Ручной ввод</button>
+                        <button class="btn cancel-btn" id="vdova-cancel-btn" onclick="cancelKill('vdova')">✖ Отмена</button>
+                    </div>
+                </td>
+            </tr>
+
+            <tr id="slepo-krc-row">
+                <td class="boss-cell">
+                    <div class="boss-info">
+                        <img class="boss-icon" src="assets/img/icon_elit/slepoglaz.png" width="90" height="104">
+                        <span class="boss-name">Слепоглаз(Крс)</span>
+                    </div>
+                    <div class="boss-map">
+                        <img src="" width="250">
+                    </div>
+                </td>
+                <td>02:00:00</td>
+                <td class="timer" id="slepo-krc-timer">00:00:00</td>
+                <td>
+                    <div class="button-container">
+                        <button class="btn" id="slepo-krc-btn" onclick="startTimer('slepo-krc', 7200)">Убит</button>
+                        <button class="btn manual-time-btn" onclick="manualTimeInput('slepo-krc')">Ручной ввод</button>
+                        <button class="btn cancel-btn" id="slepo-krc-cancel-btn" onclick="cancelKill('slepo-krc')">✖ Отмена</button>
+                    </div>
+                </td>
+            </tr>
+
+            <tr id="slepo-tym-row">
+                <td class="boss-cell">
+                    <div class="boss-info">
+                        <img class="boss-icon" src="assets/img/icon_elit/slepoglaz.png" width="90" height="104">
+                        <span class="boss-name">Слепоглаз(Тум)</span>
+                    </div>
+                    <div class="boss-map">
+                        <img src="" width="250">
+                    </div>
+                </td>
+                <td>02:00:00</td>
+                <td class="timer" id="slepo-tym-timer">00:00:00</td>
+                <td>
+                    <div class="button-container">
+                        <button class="btn" id="slepo-tym-btn" onclick="startTimer('slepo-tym', 7200)">Убит</button>
+                        <button class="btn manual-time-btn" onclick="manualTimeInput('slepo-tym')">Ручной ввод</button>
+                        <button class="btn cancel-btn" id="slepo-tym-cancel-btn" onclick="cancelKill('slepo-tym')">✖ Отмена</button>
+                    </div>
+                </td>
+            </tr>
+            
+            <tr id="dyan-elgor-row">
+                <td class="boss-cell">
+                    <div class="boss-info">
+                        <img class="boss-icon" src="assets/img/icon_boss/dyan.png" width="90" height="104">
+                        <span class="boss-name">Дуан(Элгор)</span>
+                    </div>
+                    <div class="boss-map">
+                        <img src="" width="250">
+                    </div>
+                </td>
+                <td>04:05:00</td>
+                <td class="timer" id="dyan-elgor-timer">00:00:00</td>
+                <td>
+                    <div class="button-container">
+                        <button class="btn" id="dyan-elgor-btn" onclick="startTimer('dyan-elgor', 14700)">Убит</button>
+                        <button class="btn manual-time-btn" onclick="manualTimeInput('dyan-elgor')">Ручной ввод</button>
+                        <button class="btn cancel-btn" id="dyan-elgor-cancel-btn" onclick="cancelKill('dyan-elgor')">✖ Отмена</button>
+                    </div>
+                </td>
+            </tr>
+            
+            <tr id="dyan-les-row">
+                <td class="boss-cell">
+                    <div class="boss-info">
+                        <img class="boss-icon" src="assets/img/icon_boss/dyan.png" width="90" height="104">
+                        <span class="boss-name">Дуан(Лес)</span>
+                    </div>
+                    <div class="boss-map">
+                        <img src="" width="250">
+                    </div>
+                </td>
+                <td>04:05:00</td>
+                <td class="timer" id="dyan-les-timer">00:00:00</td>
+                <td>
+                    <div class="button-container">
+                        <button class="btn" id="dyan-les-btn" onclick="startTimer('dyan-les', 14700)">Убит</button>
+                        <button class="btn manual-time-btn" onclick="manualTimeInput('dyan-les')">Ручной ввод</button>
+                        <button class="btn cancel-btn" id="dyan-les-cancel-btn" onclick="cancelKill('dyan-les')">✖ Отмена</button>
+                    </div>
+                </td>
+            </tr>
+            
+            <tr id="dyan-arkon-row">
+                <td class="boss-cell">
+                    <div class="boss-info">
+                        <img class="boss-icon" src="assets/img/icon_boss/dyan.png" width="90" height="104">
+                        <span class="boss-name">Дуан(Аркон)</span>
+                    </div>
+                    <div class="boss-map">
+                        <img src="" width="250">
+                    </div>
+                </td>
+                <td>04:05:00</td>
+                <td class="timer" id="dyan-arkon-timer">00:00:00</td>
+                <td>
+                    <div class="button-container">
+                        <button class="btn" id="dyan-arkon-btn" onclick="startTimer('dyan-arkon', 14700)">Убит</button>
+                        <button class="btn manual-time-btn" onclick="manualTimeInput('dyan-arkon')">Ручной ввод</button>
+                        <button class="btn cancel-btn" id="dyan-arkon-cancel-btn" onclick="cancelKill('dyan-arkon')">✖ Отмена</button>
+                    </div>
+                </td>
+            </tr>
+            
+             <tr id="dyan-zagri-row">
+                <td class="boss-cell">
+                    <div class="boss-info">
+                        <img class="boss-icon" src="assets/img/icon_boss/dyan.png" width="90" height="104">
+                        <span class="boss-name">Дуан(Загры)</span>
+                    </div>
+                    <div class="boss-map">
+                        <img src="" width="250">
+                    </div>
+                </td>
+                <td>04:05:00</td>
+                <td class="timer" id="dyan-zagri-timer">00:00:00</td>
+                <td>
+                    <div class="button-container">
+                        <button class="btn" id="dyan-zagri-btn" onclick="startTimer('dyan-zagri', 14700)">Убит</button>
+                        <button class="btn manual-time-btn" onclick="manualTimeInput('dyan-zagri')">Ручной ввод</button>
+                        <button class="btn cancel-btn" id="dyan-zagri-cancel-btn" onclick="cancelKill('dyan-zagri')">✖ Отмена</button>
+                    </div>
+                </td>
+            </tr>
+            
+            
+            
+        </tbody>
+    </table>
+
+    <div style="display: none;" id="theme-toggle" class="floating-text">Смена на светлую тему</div>
+</body>
+
+</html>

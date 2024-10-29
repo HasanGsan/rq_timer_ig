@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Панель администратора</title>
+    <script type="module" src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js"></script>
+    <script type="module" src="https://www.gstatic.com/firebasejs/10.13.2/firebase-database.js"></script>
+    <script type="module" src="assets/js/admin_panel.js"></script>
+    <script src="assets/js/app.js"></script>
+    <link rel="stylesheet" href="assets/style/admin_panel.css">
+    <link rel="stylesheet" href="assets/style/alert_style.css">
+</head>
+
+<body>
+    <div id="customAlert" class="custom-alert">
+        <div class="alert-box">
+            <p id="alertMessage"></p>
+            <button id="alertOkButton" class="alert-button">OK</button>
+        </div>
+    </div>
+
+
+    <h1>Панель администратора</h1>
+
+    <h2>Добавить учетную запись пользователя</h2>
+    <form id="addUserForm">
+        <input type="text" id="newUserLogin" placeholder="Логин" required>
+        <input type="text" id="newUserPassword" placeholder="Пароль" required>
+        <input type="date" id="subscriptionDate" required>
+        <input type="time" id="subscriptionTime" required>
+        <button type="submit">Добавить пользователя</button>
+    </form>
+
+    <h2>Список пользователей</h2>
+    <table id="userTable">
+        <thead>
+            <tr>
+                <th>Логин</th>
+                <th>Уровень</th>
+                <th>Дата истечения подписки</th>
+                <th>Удалить</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Здесь будет список пользователей -->
+        </tbody>
+    </table>
+
+
+    <h2>Очистить все таймеры</h2>
+    <button id="clearTimersButton">Очистить таймеры</button>
+
+    <button id="goToTimersButton" onclick="openTimerPage()">Открыть таймер</button>
+
+    <button id="logoutButton">Выйти</button>
+
+    <script src="admin_panel.js"></script>
+
+
+    <script>
+        function openTimerPage() {
+            window.open('index.html', '_blank'); // Открывает новую вкладку
+        }
+
+    </script>
+</body>
+
+</html>
